@@ -2,16 +2,6 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { Project, Client, Payment, Invoice } from '@/types';
 import { INITIAL_PROJECTS, INITIAL_CLIENTS, INITIAL_PAYMENTS, INITIAL_INVOICES } from '@/data/initialData';
 
-// Trigger automatic background sync to VS Code local file (initialData.ts)
-export function triggerLocalVsCodeSync() {
-  if (typeof window !== 'undefined') {
-    fetch('/api/sync', { method: 'POST' })
-      .then((res) => res.json())
-      .then((res) => console.log('⚡ Two-way sync to VS Code initialData.ts completed:', res))
-      .catch((err) => console.warn('Sync to local VS Code file background notification:', err));
-  }
-}
-
 // Check if string is a valid UUID
 function isValidUUID(str?: string): boolean {
   if (!str) return false;
@@ -125,8 +115,6 @@ export async function saveProject(project: Partial<Project> & { id?: string }): 
       result = data as Project;
     }
 
-    // Trigger two-way sync to VS Code local file
-    triggerLocalVsCodeSync();
     return result;
   }
 
@@ -140,10 +128,8 @@ export async function deleteProject(id: string): Promise<boolean> {
       console.error('Supabase delete error:', error.message);
       throw new Error(`Supabase delete error: ${error.message}`);
     }
-    triggerLocalVsCodeSync();
     return true;
   }
-  triggerLocalVsCodeSync();
   return true;
 }
 
@@ -216,7 +202,6 @@ export async function saveClient(client: Partial<Client> & { id?: string }): Pro
       result = data as Client;
     }
 
-    triggerLocalVsCodeSync();
     return result;
   }
 
@@ -230,10 +215,8 @@ export async function deleteClient(id: string): Promise<boolean> {
       console.error('Supabase delete client error:', error.message);
       throw new Error(`Supabase delete client error: ${error.message}`);
     }
-    triggerLocalVsCodeSync();
     return true;
   }
-  triggerLocalVsCodeSync();
   return true;
 }
 
@@ -305,7 +288,6 @@ export async function savePayment(payment: Partial<Payment> & { id?: string }): 
       result = data as Payment;
     }
 
-    triggerLocalVsCodeSync();
     return result;
   }
 
@@ -319,10 +301,8 @@ export async function deletePayment(id: string): Promise<boolean> {
       console.error('Supabase delete payment error:', error.message);
       throw new Error(`Supabase delete payment error: ${error.message}`);
     }
-    triggerLocalVsCodeSync();
     return true;
   }
-  triggerLocalVsCodeSync();
   return true;
 }
 
@@ -399,7 +379,6 @@ export async function saveInvoice(invoice: Partial<Invoice> & { id?: string }): 
       result = data as Invoice;
     }
 
-    triggerLocalVsCodeSync();
     return result;
   }
 
@@ -413,9 +392,7 @@ export async function deleteInvoice(id: string): Promise<boolean> {
       console.error('Supabase delete invoice error:', error.message);
       throw new Error(`Supabase delete invoice error: ${error.message}`);
     }
-    triggerLocalVsCodeSync();
     return true;
   }
-  triggerLocalVsCodeSync();
   return true;
 }
