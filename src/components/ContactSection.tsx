@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MessageCircle, Send, CheckCircle2, Clock, MapPin, Sparkles } from 'lucide-react';
 import { saveClient } from '@/lib/agencyData';
+import { SITE_CONFIG, waLink } from '@/lib/siteConfig';
 import ThreeDCard from './ThreeDCard';
 
 export default function ContactSection() {
@@ -69,7 +70,7 @@ export default function ContactSection() {
                 {/* Phone */}
                 <ThreeDCard depth={6} glare={false}>
                   <a
-                    href="tel:+917896554039"
+                    href={`tel:${SITE_CONFIG.phoneTel}`}
                     className="p-4 rounded-xl bg-[#0E0E13] border border-[#D4C5B9]/15 hover:border-[#C5A880]/50 transition-all flex items-center gap-4 group"
                   >
                     <div className="w-12 h-12 rounded-lg bg-[#16161C] border border-[#C5A880]/30 flex items-center justify-center text-[#DFC08F] group-hover:bg-[#DFC08F] group-hover:text-[#050505] transition-all">
@@ -80,7 +81,7 @@ export default function ContactSection() {
                         Direct Phone
                       </div>
                       <div className="text-base font-bold text-[#F5F2ED] font-mono group-hover:text-[#DFC08F] transition-colors">
-                        +91 7896554039
+                        {SITE_CONFIG.phoneDisplay}
                       </div>
                     </div>
                   </a>
@@ -124,13 +125,13 @@ export default function ContactSection() {
 
               {/* Direct WhatsApp CTA Button */}
               <a
-                href="https://wa.me/917896554039?text=Hi%20Avinay,%20I'd%20like%20to%20discuss%20a%20project%20with%20AvinayStudio."
+                href={waLink("Hi Avinay, I'd like to discuss a project with AvinayStudio.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-4 px-6 rounded-xl text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(223,192,143,0.35)] transform hover:-translate-y-1"
               >
                 <MessageCircle className="w-4 h-4" />
-                Chat on WhatsApp (+91 7896554039)
+                Chat on WhatsApp ({SITE_CONFIG.phoneDisplay})
               </a>
             </div>
 
@@ -169,7 +170,7 @@ export default function ContactSection() {
                     </p>
                     <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
                       <a
-                        href={`https://wa.me/917896554039?text=Hi%20Avinay,%20I%20just%20submitted%20an%20inquiry%20for%20${encodeURIComponent(formData.package)}.%20My%20name%20is%20${encodeURIComponent(formData.name)}.`}
+                        href={waLink(`Hi Avinay, I just submitted an inquiry for ${formData.package}. My name is ${formData.name}.`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] flex items-center gap-2"

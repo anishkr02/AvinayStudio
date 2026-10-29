@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Menu, X, ShieldCheck } from 'lucide-react';
+import { waLink } from '@/lib/siteConfig';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -73,7 +74,7 @@ export default function Navbar() {
             Admin
           </Link>
           <a
-            href="https://wa.me/917896554039?text=Hi%20Avinay,%20I'd%20like%20to%20discuss%20a%20project%20with%20AvinayStudio."
+            href={waLink("Hi Avinay, I'd like to discuss a project with AvinayStudio.")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] transition-all transform hover:-translate-y-0.5 shadow-[0_0_20px_rgba(223,192,143,0.3)]"
@@ -110,7 +111,7 @@ export default function Navbar() {
           </div>
           <div className="pt-4 border-t border-[#D4C5B9]/10 flex flex-col gap-3">
             <a
-              href="https://wa.me/917896554039?text=Hi%20Avinay,%20I'd%20like%20to%20discuss%20a%20project%20with%20AvinayStudio."
+              href={waLink("Hi Avinay, I'd like to discuss a project with AvinayStudio.")}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full text-center py-3 rounded-full text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] transition-all shadow-[0_0_20px_rgba(223,192,143,0.25)]"

@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowUp, ShieldCheck, Heart } from 'lucide-react';
+import { SITE_CONFIG, waLink } from '@/lib/siteConfig';
 
 export default function Footer() {
   const scrollToTop = () => {
@@ -31,7 +32,7 @@ export default function Footer() {
               A bespoke digital agency based in Assam, crafting high-converting web applications, modern storefronts, and authority brands for ambitious businesses.
             </p>
             <div className="text-xs text-[#75716B]">
-              Direct Phone: <span className="text-[#E8DFD8] font-mono">+91 7896554039</span> <br />
+              Direct Phone: <span className="text-[#E8DFD8] font-mono">{SITE_CONFIG.phoneDisplay}</span> <br />
               Email: <span className="text-[#E8DFD8]">sharmaavinay0@gmail.com</span>
             </div>
           </div>
@@ -65,7 +66,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://wa.me/917896554039"
+                  href={waLink()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-[#DFC08F] transition-colors"

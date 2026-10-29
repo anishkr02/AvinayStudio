@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { waLink } from '@/lib/siteConfig';
 
 export default function PricingSection() {
   const plans = [
@@ -135,7 +136,7 @@ export default function PricingSection() {
 
               {/* Action Button */}
               <a
-                href={`https://wa.me/917896554039?text=Hi%20Avinay,%20I'd%20like%20to%20order%20the%20${encodeURIComponent(plan.name)}%20(${encodeURIComponent(plan.price)}).`}
+                href={waLink(`Hi Avinay, I'd like to order the ${plan.name} (${plan.price}).`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`w-full py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-center transition-all flex items-center justify-center gap-2 ${
@@ -163,7 +164,7 @@ export default function PricingSection() {
             </div>
           </div>
           <a
-            href="https://wa.me/917896554039?text=Hi%20Avinay,%20I%20have%20a%20custom%20web%20application%20requirement."
+            href={waLink('Hi Avinay, I have a custom web application requirement.')}
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] shrink-0"

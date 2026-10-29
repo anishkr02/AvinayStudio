@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import Image from 'next/image';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { ShieldCheck, Target, Zap, HeartHandshake, PhoneCall, Sparkles } from 'lucide-react';
+import { SITE_CONFIG, waLink } from '@/lib/siteConfig';
 import ThreeDCard from './ThreeDCard';
 
 export default function AboutSection() {
@@ -171,7 +172,7 @@ export default function AboutSection() {
             {/* Direct Connect CTA */}
             <div className="flex flex-wrap items-center gap-4">
               <a
-                href="https://wa.me/917896554039?text=Hi%20Avinay,%20I'd%20like%20to%20discuss%20working%20together."
+                href={waLink("Hi Avinay, I'd like to discuss working together.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-7 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] transition-all transform hover:-translate-y-1 shadow-[0_0_25px_rgba(223,192,143,0.3)]"
@@ -179,11 +180,11 @@ export default function AboutSection() {
                 Talk Directly with Avinay
               </a>
               <a
-                href="tel:+917896554039"
+                href={`tel:${SITE_CONFIG.phoneTel}`}
                 className="px-6 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-[#E8DFD8] bg-[#14141A] hover:bg-[#1A1A22] border border-[#D4C5B9]/20 transition-all flex items-center gap-2"
               >
                 <PhoneCall className="w-3.5 h-3.5 text-[#DFC08F]" />
-                +91 7896554039
+                {SITE_CONFIG.phoneDisplay}
               </a>
             </div>
 

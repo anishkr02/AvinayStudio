@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Sparkles, FolderGit2 } from 'lucide-react';
 import { Project } from '@/types';
 import { fetchProjects } from '@/lib/agencyData';
+import { waLink } from '@/lib/siteConfig';
 import ThreeDCard from './ThreeDCard';
 
 export default function PortfolioSection() {
@@ -149,7 +150,7 @@ export default function PortfolioSection() {
                         </a>
                       ) : (
                         <a
-                          href="https://wa.me/917896554039?text=Hi%20Avinay,%20I'd%20like%20to%20see%20more%20details%20about%20your%20portfolio."
+                          href={waLink("Hi Avinay, I'd like to see more details about your portfolio.")}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 text-xs font-bold text-[#DFC08F] hover:text-[#E8DFD8] transition-colors"

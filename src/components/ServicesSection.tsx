@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Layout, Briefcase, ShoppingBag, ArrowRight, Check } from 'lucide-react';
+import { waLink } from '@/lib/siteConfig';
 import ThreeDCard from './ThreeDCard';
 
 export default function ServicesSection() {
@@ -139,7 +140,7 @@ export default function ServicesSection() {
                     {/* Card Action Button */}
                     <div className="[transform:translateZ(30px)]">
                       <a
-                        href={`https://wa.me/917896554039?text=Hi%20Avinay,%20I'm%20interested%20in%20the%20${encodeURIComponent(service.title)}%20package.`}
+                        href={waLink(`Hi Avinay, I'm interested in the ${service.title} package.`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`w-full py-3.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-center transition-all flex items-center justify-center gap-2 ${
