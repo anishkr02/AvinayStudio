@@ -156,7 +156,7 @@ export default function AdminProjectsPage() {
             Manage Portfolio Projects
           </h1>
           <p className="text-xs text-[#B8B3AB] mt-1">
-            Direct real-time two-way synchronization with your Supabase database and public website.
+            Changes you save here are stored in your Supabase database and shown on the public website.
           </p>
         </div>
 
