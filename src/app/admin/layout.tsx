@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import {
   LayoutDashboard,
   FolderGit2,
@@ -33,10 +34,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Invoices & PDF', href: '/admin/invoices', icon: FileText },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('avinay_studio_auth');
-    localStorage.removeItem('avinay_studio_user');
-    router.push('/admin/login');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.replace('/admin/login');
+    router.refresh();
   };
 
   return (

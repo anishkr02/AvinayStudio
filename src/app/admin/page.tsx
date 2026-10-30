@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   FolderGit2,
   Users,
@@ -21,20 +20,12 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import { Project, Client, Payment } from '@/types';
 
 export default function AdminDashboardPage() {
-  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check local auth
-    const isAuthed = localStorage.getItem('avinay_studio_auth');
-    if (!isAuthed) {
-      router.push('/admin/login');
-      return;
-    }
-
     async function loadData() {
       const [p, c, pay] = await Promise.all([
         fetchProjects(),
@@ -47,7 +38,7 @@ export default function AdminDashboardPage() {
       setLoading(false);
     }
     loadData();
-  }, [router]);
+  }, []);
 
   const totalBilled = payments.reduce((acc, curr) => acc + Number(curr.total_amount || 0), 0);
   const totalPaid = payments.reduce((acc, curr) => acc + Number(curr.paid_amount || 0), 0);

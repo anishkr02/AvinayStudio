@@ -16,54 +16,38 @@ export default function AdminLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isSupabaseConfigured) {
+      setErrorMsg('Supabase is not configured');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg('');
 
-    // If Supabase is configured, authenticate via Supabase Auth
-    if (isSupabaseConfigured) {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-        if (!error && data.session) {
-          localStorage.setItem('avinay_studio_auth', 'true');
-          localStorage.setItem('avinay_studio_user', email.trim());
-          router.push('/admin');
-          return;
-        } else if (error) {
-          // If Supabase user not created yet, check against authorized agency credentials
-          const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sharmaavinay0@gmail.com';
-          const adminPass = process.env.NEXT_PUBLIC_ADMIN_DEMO_PASS || 'avinay2026';
-
-          if (email.trim().toLowerCase() === adminEmail.toLowerCase() && password === adminPass) {
-            localStorage.setItem('avinay_studio_auth', 'true');
-            localStorage.setItem('avinay_studio_user', email.trim());
-            router.push('/admin');
-            return;
-          }
-
-          setErrorMsg('Invalid email or password. Access restricted to authorized personnel.');
-        }
-      } catch (err: any) {
-        setErrorMsg(err.message || 'Authentication service error. Please try again.');
-      }
-    } else {
-      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sharmaavinay0@gmail.com';
-      const adminPass = process.env.NEXT_PUBLIC_ADMIN_DEMO_PASS || 'avinay2026';
-
-      if (email.trim().toLowerCase() === adminEmail.toLowerCase() && password === adminPass) {
-        localStorage.setItem('avinay_studio_auth', 'true');
-        localStorage.setItem('avinay_studio_user', email.trim());
-        router.push('/admin');
+      if (error) {
+        setErrorMsg(error.message);
         return;
-      } else {
-        setErrorMsg('Invalid credentials. Access restricted to authorized personnel.');
       }
-    }
 
-    setLoading(false);
+      if (data.user.app_metadata?.role !== 'admin') {
+        await supabase.auth.signOut();
+        setErrorMsg('This account is not authorised for admin access.');
+        return;
+      }
+
+      router.replace('/admin');
+      router.refresh();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Authentication service error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
