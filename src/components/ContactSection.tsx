@@ -7,6 +7,14 @@ import { createLead } from '@/lib/agencyData';
 import { SITE_CONFIG, waLink } from '@/lib/siteConfig';
 import ThreeDCard from './ThreeDCard';
 
+function sanitizePhone(value: string): string {
+  let digits = value.replace(/\D/g, '');
+  if (digits.length > 10 && digits.startsWith('91')) {
+    digits = digits.slice(2);
+  }
+  return digits.slice(0, 10);
+}
+
 export default function ContactSection() {
   const [formData, setFormData] = useState({
     name: '',
@@ -18,10 +26,8 @@ export default function ContactSection() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
-  const [phoneTouched, setPhoneTouched] = useState(false);
   const [website, setWebsite] = useState('');
-  const cleanedPhone = formData.phone.replace(/[\s-]/g, '');
-  const isPhoneValid = /^(\+91)?[6-9]\d{9}$/.test(cleanedPhone);
+  const isPhoneValid = /^[6-9]\d{9}$/.test(formData.phone);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +37,6 @@ export default function ContactSection() {
       return;
     }
     if (!formData.name || !isPhoneValid) {
-      setPhoneTouched(true);
       return;
     }
 
@@ -41,7 +46,7 @@ export default function ContactSection() {
     try {
       await createLead({
         name: formData.name,
-        phone: cleanedPhone,
+        phone: `+91${formData.phone}`,
         business: formData.business,
         package: formData.package,
         message: formData.message,
@@ -196,7 +201,6 @@ export default function ContactSection() {
                         onClick={() => {
                           setSubmitted(false);
                           setFormData({ name: '', phone: '', business: '', package: 'Business Website', message: '' });
-                          setPhoneTouched(false);
                           setSubmitError(false);
                           setWebsite('');
                         }}
@@ -240,18 +244,25 @@ export default function ContactSection() {
                         <input
                           type="tel"
                           required
-                          maxLength={20}
-                          inputMode="tel"
+                          maxLength={10}
+                          inputMode="numeric"
+                          autoComplete="tel-national"
+                          pattern="[6-9][0-9]{9}"
                           value={formData.phone}
                           onChange={(e) => {
-                            setFormData({ ...formData, phone: e.target.value });
-                            setPhoneTouched(true);
+                            setFormData({ ...formData, phone: sanitizePhone(e.target.value) });
                           }}
-                          onBlur={() => setPhoneTouched(true)}
-                          placeholder="+91 98765 43210"
+                          onPaste={(e) => {
+                            e.preventDefault();
+                            setFormData({
+                              ...formData,
+                              phone: sanitizePhone(e.clipboardData.getData('text')),
+                            });
+                          }}
+                          placeholder="98765 43210"
                           className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
                         />
-                        {phoneTouched && !isPhoneValid && (
+                        {formData.phone && !isPhoneValid && (
                           <p className="mt-2 text-xs text-[#E8DFD8]">Enter a valid 10-digit mobile number</p>
                         )}
                       </div>
