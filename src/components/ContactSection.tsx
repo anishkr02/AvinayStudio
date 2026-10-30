@@ -182,7 +182,7 @@ export default function ContactSection() {
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
                     <h4 className="text-xl font-bold text-[#F5F2ED] font-['Outfit']">
-                      Inquiry Stored in Supabase!
+                      Inquiry Received!
                     </h4>
                     <p className="text-sm text-[#B8B3AB] max-w-md mx-auto">
                       Thank you! Avinay has received your inquiry and will reach out to <span className="text-[#DFC08F] font-bold">{formData.phone}</span> shortly.
