@@ -16,10 +16,13 @@ import {
 } from 'lucide-react';
 import { fetchClients, saveClient } from '@/lib/agencyData';
 import { Client } from '@/types';
+import { AdminError, AdminLoading, getAdminErrorMessage } from '@/components/admin/AdminState';
 
 export default function AdminClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
@@ -37,9 +40,15 @@ export default function AdminClientsPage() {
 
   const loadClients = async () => {
     setLoading(true);
-    const data = await fetchClients();
-    setClients(data);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const data = await fetchClients();
+      setClients(data);
+    } catch (error: unknown) {
+      setLoadError(getAdminErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -47,6 +56,7 @@ export default function AdminClientsPage() {
   }, []);
 
   const handleOpenAdd = () => {
+    setActionError(null);
     setEditingClient(null);
     setFormData({
       business_name: '',
@@ -63,6 +73,7 @@ export default function AdminClientsPage() {
   };
 
   const handleOpenEdit = (c: Client) => {
+    setActionError(null);
     setEditingClient(c);
     setFormData({
       business_name: c.business_name,
@@ -80,21 +91,29 @@ export default function AdminClientsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveClient({
-      id: editingClient ? editingClient.id : undefined,
-      business_name: formData.business_name,
-      contact_name: formData.contact_name,
-      phone: formData.phone,
-      email: formData.email,
-      location: formData.location,
-      package_selected: formData.package_selected,
-      status: formData.status,
-      total_billed: Number(formData.total_billed),
-      notes: formData.notes,
-    });
-    setIsModalOpen(false);
-    await loadClients();
+    setActionError(null);
+    try {
+      await saveClient({
+        id: editingClient ? editingClient.id : undefined,
+        business_name: formData.business_name,
+        contact_name: formData.contact_name,
+        phone: formData.phone,
+        email: formData.email,
+        location: formData.location,
+        package_selected: formData.package_selected,
+        status: formData.status,
+        total_billed: Number(formData.total_billed),
+        notes: formData.notes,
+      });
+      setIsModalOpen(false);
+      await loadClients();
+    } catch (error: unknown) {
+      setActionError(getAdminErrorMessage(error));
+    }
   };
+
+  if (loading) return <AdminLoading />;
+  if (loadError) return <AdminError message={loadError} onRetry={loadClients} />;
 
   return (
     <div className="space-y-8">
@@ -121,6 +140,12 @@ export default function AdminClientsPage() {
           Add Client Record
         </button>
       </div>
+
+      {actionError && !isModalOpen && (
+        <div role="alert" className="rounded-xl border border-[#552222] bg-[#221212] p-4 text-sm text-[#E8DFD8]">
+          {actionError}
+        </div>
+      )}
 
       {/* Clients Table */}
       <div className="rounded-2xl bg-[#0D0D12] border border-[#D4C5B9]/15 overflow-hidden shadow-2xl">
@@ -239,6 +264,12 @@ export default function AdminClientsPage() {
             <p className="text-xs text-[#B8B3AB] mb-6">
               Enter business and contract details for this client.
             </p>
+
+            {actionError && (
+              <div role="alert" className="mb-4 rounded-xl border border-[#552222] bg-[#221212] p-4 text-xs text-[#E8DFD8]">
+                {actionError}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

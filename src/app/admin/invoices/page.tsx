@@ -14,10 +14,13 @@ import {
 import { fetchInvoices, saveInvoice } from '@/lib/agencyData';
 import { generateInvoicePDF } from '@/lib/pdfInvoice';
 import { Invoice, InvoiceItem } from '@/types';
+import { AdminError, AdminLoading, getAdminErrorMessage } from '@/components/admin/AdminState';
 
 export default function AdminInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // New Invoice Form State
@@ -37,9 +40,17 @@ export default function AdminInvoicesPage() {
 
   const loadInvoices = async () => {
     setLoading(true);
-    const data = await fetchInvoices();
-    setInvoices(data);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const data = await fetchInvoices();
+      setInvoices(data);
+      return true;
+    } catch (error: unknown) {
+      setLoadError(getAdminErrorMessage(error));
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -47,6 +58,7 @@ export default function AdminInvoicesPage() {
   }, []);
 
   const handleOpenCreate = () => {
+    setActionError(null);
     const year = new Date().getFullYear();
     const randomSuffix = Math.floor(100 + Math.random() * 900);
     setInvoiceNumber(`INV-${year}-${randomSuffix}`);
@@ -61,12 +73,17 @@ export default function AdminInvoicesPage() {
     setIsModalOpen(true);
   };
 
-  const handleItemChange = (index: number, field: keyof InvoiceItem, value: any) => {
-    const updated = [...items];
-    const item = { ...updated[index], [field]: value };
-    if (field === 'quantity' || field === 'rate') {
-      item.amount = (Number(item.quantity) || 0) * (Number(item.rate) || 0);
+  const handleItemChange = (index: number, field: keyof InvoiceItem, value: string | number) => {
+    const item = { ...items[index] };
+    if (field === 'description') {
+      item.description = String(value);
+    } else if (field === 'quantity') {
+      item.quantity = Number(value);
+    } else if (field === 'rate') {
+      item.rate = Number(value);
     }
+    item.amount = (Number(item.quantity) || 0) * (Number(item.rate) || 0);
+    const updated = [...items];
     updated[index] = item;
     setItems(updated);
   };
@@ -89,6 +106,7 @@ export default function AdminInvoicesPage() {
   const handleSaveAndDownload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientName) return;
+    setActionError(null);
 
     const newInvoice: Invoice = {
       id: `inv-${Date.now()}`,
@@ -107,13 +125,19 @@ export default function AdminInvoicesPage() {
       notes,
     };
 
-    await saveInvoice(newInvoice);
-    setIsModalOpen(false);
-    await loadInvoices();
-
-    // Trigger PDF download
-    generateInvoicePDF(newInvoice);
+    try {
+      await saveInvoice(newInvoice);
+      setIsModalOpen(false);
+      const loaded = await loadInvoices();
+      if (!loaded) return;
+      generateInvoicePDF(newInvoice);
+    } catch (error: unknown) {
+      setActionError(getAdminErrorMessage(error));
+    }
   };
+
+  if (loading) return <AdminLoading />;
+  if (loadError) return <AdminError message={loadError} onRetry={loadInvoices} />;
 
   return (
     <div className="space-y-8">
@@ -140,6 +164,12 @@ export default function AdminInvoicesPage() {
           Create New Invoice
         </button>
       </div>
+
+      {actionError && !isModalOpen && (
+        <div role="alert" className="rounded-xl border border-[#552222] bg-[#221212] p-4 text-sm text-[#E8DFD8]">
+          {actionError}
+        </div>
+      )}
 
       {/* Invoices List */}
       <div className="rounded-2xl bg-[#0D0D12] border border-[#D4C5B9]/15 overflow-hidden shadow-2xl">
@@ -228,6 +258,12 @@ export default function AdminInvoicesPage() {
             <p className="text-xs text-[#B8B3AB] mb-6">
               Fill in client deliverables. The PDF will be branded with your agency details, UPI QR instructions, and payment terms.
             </p>
+
+            {actionError && (
+              <div role="alert" className="mb-6 rounded-xl border border-[#552222] bg-[#221212] p-4 text-xs text-[#E8DFD8]">
+                {actionError}
+              </div>
+            )}
 
             <form onSubmit={handleSaveAndDownload} className="space-y-6">
               {/* Header Details */}

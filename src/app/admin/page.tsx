@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   FolderGit2,
@@ -18,15 +18,19 @@ import {
 import { fetchProjects, fetchClients, fetchPayments } from '@/lib/agencyData';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { Project, Client, Payment } from '@/types';
+import { AdminError, AdminLoading, getAdminErrorMessage } from '@/components/admin/AdminState';
 
 export default function AdminDashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadData() {
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
       const [p, c, pay] = await Promise.all([
         fetchProjects(),
         fetchClients(),
@@ -35,14 +39,23 @@ export default function AdminDashboardPage() {
       setProjects(p);
       setClients(c);
       setPayments(pay);
+    } catch (error: unknown) {
+      setLoadError(getAdminErrorMessage(error));
+    } finally {
       setLoading(false);
     }
-    loadData();
   }, []);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   const totalBilled = payments.reduce((acc, curr) => acc + Number(curr.total_amount || 0), 0);
   const totalPaid = payments.reduce((acc, curr) => acc + Number(curr.paid_amount || 0), 0);
   const pendingAmount = totalBilled - totalPaid;
+
+  if (loading) return <AdminLoading />;
+  if (loadError) return <AdminError message={loadError} onRetry={loadData} />;
 
   return (
     <div className="space-y-8">

@@ -18,10 +18,13 @@ import {
 } from 'lucide-react';
 import { fetchProjects, saveProject, deleteProject, uploadProjectImage } from '@/lib/agencyData';
 import { Project } from '@/types';
+import { AdminError, AdminLoading, getAdminErrorMessage } from '@/components/admin/AdminState';
+import { isAllowedImageUrl, safeImageSrc } from '@/lib/imageUrl';
 
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -42,12 +45,12 @@ export default function AdminProjectsPage() {
 
   const loadProjects = async () => {
     setLoading(true);
-    setActionError(null);
+    setLoadError(null);
     try {
       const data = await fetchProjects();
       setProjects(data);
-    } catch (err: any) {
-      setActionError(err.message || 'Error loading projects from Supabase');
+    } catch (err: unknown) {
+      setLoadError(getAdminErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -93,11 +96,12 @@ export default function AdminProjectsPage() {
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to permanently delete "${title}"?`)) return;
+    setActionError(null);
     try {
       await deleteProject(id);
       await loadProjects();
-    } catch (err: any) {
-      alert(`Delete Error: ${err.message}. Please check Supabase permissions.`);
+    } catch (err: unknown) {
+      setActionError(getAdminErrorMessage(err));
     }
   };
 
@@ -105,13 +109,13 @@ export default function AdminProjectsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setActionError(null);
     setUploadingImage(true);
     try {
       const uploadedUrl = await uploadProjectImage(file);
       setFormData((prev) => ({ ...prev, image_url: uploadedUrl }));
-    } catch (err) {
-      console.error('Failed to upload image:', err);
-      alert('Could not upload image. Please try another file.');
+    } catch (err: unknown) {
+      setActionError(getAdminErrorMessage(err));
     } finally {
       setUploadingImage(false);
     }
@@ -120,6 +124,10 @@ export default function AdminProjectsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionError(null);
+    if (!isAllowedImageUrl(formData.image_url)) {
+      return;
+    }
+
     try {
       const tagArray = formData.tags.split(',').map((t) => t.trim()).filter(Boolean);
 
@@ -138,10 +146,13 @@ export default function AdminProjectsPage() {
 
       setIsModalOpen(false);
       await loadProjects();
-    } catch (err: any) {
-      setActionError(err.message || 'Failed to save to Supabase');
+    } catch (err: unknown) {
+      setActionError(getAdminErrorMessage(err));
     }
   };
+
+  if (loading) return <AdminLoading />;
+  if (loadError) return <AdminError message={loadError} onRetry={loadProjects} />;
 
   return (
     <div className="space-y-8">
@@ -169,7 +180,7 @@ export default function AdminProjectsPage() {
         </button>
       </div>
 
-      {actionError && (
+      {actionError && !isModalOpen && (
         <div className="p-4 rounded-xl bg-[#221212] border border-[#552222] text-xs text-[#E8DFD8] flex items-start gap-3">
           <AlertCircle className="w-4 h-4 text-[#DFC08F] shrink-0 mt-0.5" />
           <div>
@@ -190,7 +201,7 @@ export default function AdminProjectsPage() {
               {/* Image Preview */}
               <div className="relative aspect-[16/10] w-full bg-[#050507]">
                 <Image
-                  src={proj.image_url || '/images/hero-laptop.jpg'}
+                  src={safeImageSrc(proj.image_url)}
                   alt={proj.title}
                   fill
                   className="object-cover object-top"
@@ -289,6 +300,12 @@ export default function AdminProjectsPage() {
               Enter case study details. Changes will save directly to Supabase and show immediately on your website.
             </p>
 
+            {actionError && (
+              <div role="alert" className="mb-5 rounded-xl border border-[#552222] bg-[#221212] p-4 text-xs text-[#E8DFD8]">
+                {actionError}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-5">
               
               {/* Photo Upload Zone */}
@@ -300,7 +317,7 @@ export default function AdminProjectsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                   <div className="sm:col-span-5 relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-[#D4C5B9]/20 bg-[#050508]">
                     <Image
-                      src={formData.image_url || '/images/hero-laptop.jpg'}
+                      src={safeImageSrc(formData.image_url)}
                       alt="Project preview"
                       fill
                       className="object-cover"
@@ -337,10 +354,18 @@ export default function AdminProjectsPage() {
                       <input
                         type="text"
                         value={formData.image_url}
-                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                        onChange={(e) => {
+                          setFormData({ ...formData, image_url: e.target.value });
+                          setActionError(null);
+                        }}
                         placeholder="https://... or /images/..."
                         className="w-full px-3 py-2 rounded-lg bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] text-xs focus:outline-none focus:border-[#DFC08F]"
                       />
+                      {!isAllowedImageUrl(formData.image_url) && (
+                        <p className="mt-1 text-[11px] text-[#E8DFD8]">
+                          Use an uploaded image or a /images/ path
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

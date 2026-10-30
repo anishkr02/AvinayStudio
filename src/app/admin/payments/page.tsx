@@ -13,10 +13,13 @@ import {
 } from 'lucide-react';
 import { fetchPayments, savePayment } from '@/lib/agencyData';
 import { Payment } from '@/types';
+import { AdminError, AdminLoading, getAdminErrorMessage } from '@/components/admin/AdminState';
 
 export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
 
@@ -33,9 +36,15 @@ export default function AdminPaymentsPage() {
 
   const loadPayments = async () => {
     setLoading(true);
-    const data = await fetchPayments();
-    setPayments(data);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const data = await fetchPayments();
+      setPayments(data);
+    } catch (error: unknown) {
+      setLoadError(getAdminErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -43,6 +52,7 @@ export default function AdminPaymentsPage() {
   }, []);
 
   const handleOpenAdd = () => {
+    setActionError(null);
     setEditingPayment(null);
     setFormData({
       client_name: '',
@@ -58,6 +68,7 @@ export default function AdminPaymentsPage() {
   };
 
   const handleOpenEdit = (p: Payment) => {
+    setActionError(null);
     setEditingPayment(p);
     setFormData({
       client_name: p.client_name,
@@ -74,24 +85,32 @@ export default function AdminPaymentsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await savePayment({
-      id: editingPayment ? editingPayment.id : undefined,
-      client_name: formData.client_name,
-      project_title: formData.project_title,
-      invoice_number: formData.invoice_number,
-      total_amount: Number(formData.total_amount),
-      paid_amount: Number(formData.paid_amount),
-      due_date: formData.due_date,
-      payment_method: formData.payment_method,
-      status: formData.status,
-    });
-    setIsModalOpen(false);
-    await loadPayments();
+    setActionError(null);
+    try {
+      await savePayment({
+        id: editingPayment ? editingPayment.id : undefined,
+        client_name: formData.client_name,
+        project_title: formData.project_title,
+        invoice_number: formData.invoice_number,
+        total_amount: Number(formData.total_amount),
+        paid_amount: Number(formData.paid_amount),
+        due_date: formData.due_date,
+        payment_method: formData.payment_method,
+        status: formData.status,
+      });
+      setIsModalOpen(false);
+      await loadPayments();
+    } catch (error: unknown) {
+      setActionError(getAdminErrorMessage(error));
+    }
   };
 
   const totalBilled = payments.reduce((acc, curr) => acc + Number(curr.total_amount || 0), 0);
   const totalPaid = payments.reduce((acc, curr) => acc + Number(curr.paid_amount || 0), 0);
   const pendingAmount = totalBilled - totalPaid;
+
+  if (loading) return <AdminLoading />;
+  if (loadError) return <AdminError message={loadError} onRetry={loadPayments} />;
 
   return (
     <div className="space-y-8">
@@ -118,6 +137,12 @@ export default function AdminPaymentsPage() {
           Record Payment
         </button>
       </div>
+
+      {actionError && !isModalOpen && (
+        <div role="alert" className="rounded-xl border border-[#552222] bg-[#221212] p-4 text-sm text-[#E8DFD8]">
+          {actionError}
+        </div>
+      )}
 
       {/* Top Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -241,6 +266,12 @@ export default function AdminPaymentsPage() {
             <p className="text-xs text-[#B8B3AB] mb-6">
               Log project deposits, advances, or final completion payments.
             </p>
+
+            {actionError && (
+              <div role="alert" className="mb-4 rounded-xl border border-[#552222] bg-[#221212] p-4 text-xs text-[#E8DFD8]">
+                {actionError}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
