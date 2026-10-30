@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
   LayoutDashboard,
+  Inbox,
   FolderGit2,
   Users,
   CreditCard,
@@ -28,6 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
+    { label: 'Leads Inbox', href: '/admin/leads', icon: Inbox },
     { label: 'Projects CMS', href: '/admin/projects', icon: FolderGit2 },
     { label: 'Clients CRM', href: '/admin/clients', icon: Users },
     { label: 'Payments Tracker', href: '/admin/payments', icon: CreditCard },
