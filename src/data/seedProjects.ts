@@ -1,0 +1,43 @@
+import { Project } from '@/types';
+
+export const SEED_PROJECTS: Project[] = [
+  {
+    id: 'seed-1',
+    title: 'Maa Radio Mart',
+    client_name: 'Maa Radio Mart',
+    category: 'Electronics & Retail',
+    description: 'A modern electronics catalogue designed to help local customers discover products and make inquiries.',
+    image_url: '/images/maa-radio-store.png',
+    live_url: null,
+    tags: ['E-Commerce', 'Catalog', 'Local Business'],
+    results_metric: 'Product catalogue and customer inquiries',
+    featured: true,
+    order_index: 1,
+  },
+  {
+    id: 'seed-2',
+    title: 'Sharma Medicos',
+    client_name: 'Sharma Medicos',
+    category: 'Healthcare & Pharmacy',
+    description: 'A clear, patient-focused web presence for a local pharmacy and healthcare business.',
+    image_url: '/images/hero-laptop.jpg',
+    live_url: null,
+    tags: ['Healthcare', 'Local Business', 'SEO'],
+    results_metric: 'Accessible local healthcare information',
+    featured: true,
+    order_index: 2,
+  },
+  {
+    id: 'seed-3',
+    title: 'The Beauty Salon & Boutique',
+    client_name: 'The Beauty Salon & Boutique',
+    category: 'Salon & Lifestyle',
+    description: 'A polished showcase for salon services, boutique collections, and customer inquiries.',
+    image_url: '/images/about-avinay.png',
+    live_url: null,
+    tags: ['Salon & Lifestyle', 'Branding', 'Showcase'],
+    results_metric: 'Services and collections showcase',
+    featured: true,
+    order_index: 3,
+  },
+];

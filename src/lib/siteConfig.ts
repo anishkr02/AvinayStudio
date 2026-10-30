@@ -2,6 +2,7 @@ export const SITE_CONFIG = {
   whatsappNumber: '917896554039',
   phoneDisplay: '+91 7896554039',
   phoneTel: '+917896554039',
+  upiId: '7896554039@upi',
 } as const;
 
 export function waLink(message?: string): string {

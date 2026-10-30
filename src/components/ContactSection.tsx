@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MessageCircle, Send, CheckCircle2, Clock, MapPin, Sparkles } from 'lucide-react';
-import { saveClient } from '@/lib/agencyData';
+import { createLead } from '@/lib/agencyData';
 import { SITE_CONFIG, waLink } from '@/lib/siteConfig';
 import ThreeDCard from './ThreeDCard';
 
@@ -17,24 +17,38 @@ export default function ContactSection() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [website, setWebsite] = useState('');
+  const cleanedPhone = formData.phone.replace(/[\s-]/g, '');
+  const isPhoneValid = /^(\+91)?[6-9]\d{9}$/.test(cleanedPhone);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone) return;
+    if (submitting) return;
+    if (website) {
+      setSubmitted(true);
+      return;
+    }
+    if (!formData.name || !isPhoneValid) {
+      setPhoneTouched(true);
+      return;
+    }
+
     setSubmitting(true);
+    setSubmitError(false);
 
     try {
-      await saveClient({
-        business_name: formData.business || formData.name,
-        contact_name: formData.name,
-        phone: formData.phone,
-        package_selected: formData.package,
-        status: 'Lead',
-        notes: `Website Inquiry: ${formData.message || 'Interested in ' + formData.package}`,
+      await createLead({
+        name: formData.name,
+        phone: cleanedPhone,
+        business: formData.business,
+        package: formData.package,
+        message: formData.message,
       });
       setSubmitted(true);
-    } catch (err) {
-      console.error('Failed to submit inquiry:', err);
+    } catch {
+      setSubmitError(true);
     } finally {
       setSubmitting(false);
     }
@@ -154,7 +168,7 @@ export default function ContactSection() {
                   </span>
                 </div>
                 <p className="text-xs text-[#B8B3AB] mb-8">
-                  Your inquiry is saved directly to our secure Supabase CRM system for personal review.
+                  Your inquiry goes straight to Avinay for personal review.
                 </p>
 
                 {submitted ? (
@@ -182,6 +196,9 @@ export default function ContactSection() {
                         onClick={() => {
                           setSubmitted(false);
                           setFormData({ name: '', phone: '', business: '', package: 'Business Website', message: '' });
+                          setPhoneTouched(false);
+                          setSubmitError(false);
+                          setWebsite('');
                         }}
                         className="text-xs text-[#B8B3AB] hover:text-[#DFC08F] underline"
                       >
@@ -191,6 +208,16 @@ export default function ContactSection() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-5">
+                    <input
+                      type="text"
+                      name="website"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      className="sr-only"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
+                    />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
@@ -199,6 +226,7 @@ export default function ContactSection() {
                         <input
                           type="text"
                           required
+                          maxLength={100}
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           placeholder="e.g. Rajesh Sharma"
@@ -212,11 +240,20 @@ export default function ContactSection() {
                         <input
                           type="tel"
                           required
+                          maxLength={20}
+                          inputMode="tel"
                           value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          onChange={(e) => {
+                            setFormData({ ...formData, phone: e.target.value });
+                            setPhoneTouched(true);
+                          }}
+                          onBlur={() => setPhoneTouched(true)}
                           placeholder="+91 98765 43210"
                           className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
                         />
+                        {phoneTouched && !isPhoneValid && (
+                          <p className="mt-2 text-xs text-[#E8DFD8]">Enter a valid 10-digit mobile number</p>
+                        )}
                       </div>
                     </div>
 
@@ -227,6 +264,7 @@ export default function ContactSection() {
                         </label>
                         <input
                           type="text"
+                          maxLength={150}
                           value={formData.business}
                           onChange={(e) => setFormData({ ...formData, business: e.target.value })}
                           placeholder="e.g. Maa Radio / Sharma Medicos"
@@ -256,6 +294,7 @@ export default function ContactSection() {
                       </label>
                       <textarea
                         rows={4}
+                        maxLength={1000}
                         value={formData.message}
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         placeholder="Briefly describe what your business sells, your current setup, or any reference websites you like..."
@@ -263,9 +302,24 @@ export default function ContactSection() {
                       />
                     </div>
 
+                    {submitError && (
+                      <p className="text-xs text-[#E8DFD8]">
+                        Couldn&apos;t send your inquiry. Please message us on{' '}
+                        <a
+                          href={waLink("Hi Avinay, I couldn't submit an inquiry through the website.")}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >
+                          WhatsApp
+                        </a>{' '}
+                        instead.
+                      </p>
+                    )}
+
                     <button
                       type="submit"
-                      disabled={submitting}
+                      disabled={submitting || !isPhoneValid}
                       className="w-full py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(223,192,143,0.3)] disabled:opacity-50"
                     >
                       {submitting ? 'Submitting to Supabase...' : 'Submit Project Inquiry'}

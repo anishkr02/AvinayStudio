@@ -5,17 +5,24 @@ import { motion } from 'framer-motion';
 import { Building2, Award, Users, TrendingUp } from 'lucide-react';
 import { fetchProjects } from '@/lib/agencyData';
 import { Project } from '@/types';
+import { SEED_PROJECTS } from '@/data/seedProjects';
 import ThreeDCard from './ThreeDCard';
 
 export default function TrustSection() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const data = await fetchProjects();
-      setProjects(data);
-      setLoading(false);
+      try {
+        const data = await fetchProjects();
+        setProjects(data.length > 0 ? data : SEED_PROJECTS);
+      } catch {
+        setHasError(true);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, []);
@@ -42,7 +49,11 @@ export default function TrustSection() {
 
         {/* Dynamic Client Cards Grid from Supabase */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {projects.slice(0, 4).map((project, index) => (
+          {loading ? (
+            <p className="text-sm text-[#B8B3AB]">Loading projects...</p>
+          ) : hasError ? (
+            <p className="text-sm text-[#B8B3AB]">Projects could not be loaded right now.</p>
+          ) : projects.slice(0, 4).map((project, index) => (
             <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 20 }}

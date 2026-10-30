@@ -7,18 +7,26 @@ import { ExternalLink, Sparkles, FolderGit2 } from 'lucide-react';
 import { Project } from '@/types';
 import { fetchProjects } from '@/lib/agencyData';
 import { waLink } from '@/lib/siteConfig';
+import { safeImageSrc } from '@/lib/imageUrl';
+import { SEED_PROJECTS } from '@/data/seedProjects';
 import ThreeDCard from './ThreeDCard';
 
 export default function PortfolioSection() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const data = await fetchProjects();
-      setProjects(data);
-      setLoading(false);
+      try {
+        const data = await fetchProjects();
+        setProjects(data.length > 0 ? data : SEED_PROJECTS);
+      } catch {
+        setHasError(true);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, []);
@@ -71,8 +79,13 @@ export default function PortfolioSection() {
 
         {/* 3D Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <AnimatePresence mode="popLayout">
-            {filteredProjects.map((project, idx) => (
+          {loading ? (
+            <p className="text-sm text-[#B8B3AB]">Loading projects...</p>
+          ) : hasError ? (
+            <p className="text-sm text-[#B8B3AB]">Projects could not be loaded right now.</p>
+          ) : (
+            <AnimatePresence mode="popLayout">
+              {filteredProjects.map((project, idx) => (
               <motion.div
                 key={project.id}
                 layout
@@ -87,7 +100,7 @@ export default function PortfolioSection() {
                       {/* Image Display Frame with 3D Depth */}
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#050507] [transform:translateZ(20px)]">
                         <Image
-                          src={project.image_url || '/images/hero-laptop.jpg'}
+                          src={safeImageSrc(project.image_url)}
                           alt={project.title}
                           fill
                           className="object-cover object-top group-hover:scale-105 transition-transform duration-700 filter contrast-[1.03]"
@@ -163,8 +176,9 @@ export default function PortfolioSection() {
                   </div>
                 </ThreeDCard>
               </motion.div>
-            ))}
-          </AnimatePresence>
+              ))}
+            </AnimatePresence>
+          )}
         </div>
 
       </div>

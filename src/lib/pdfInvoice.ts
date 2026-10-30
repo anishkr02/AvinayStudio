@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { Invoice } from '@/types';
+import { SITE_CONFIG } from '@/lib/siteConfig';
 
 export function generateInvoicePDF(invoice: Invoice) {
   const doc = new jsPDF({
@@ -36,7 +37,7 @@ export function generateInvoicePDF(invoice: Invoice) {
   doc.setTextColor(184, 179, 171);
   const agencyInfo = [
     'Founder: Avinay Sharma',
-    'Phone: +91 7896554039',
+    `Phone: ${SITE_CONFIG.phoneDisplay}`,
     'Email: sharmaavinay0@gmail.com',
     'Location: Assam, India',
   ];
@@ -156,7 +157,7 @@ export function generateInvoicePDF(invoice: Invoice) {
   doc.setFontSize(8.5);
   doc.setTextColor(70, 70, 70);
   const paymentNotes = [
-    '• UPI Payment ID: 7896554039@upi (PhonePe / Google Pay)',
+    `• UPI Payment ID: ${SITE_CONFIG.upiId} (PhonePe / Google Pay)`,
     '• Account Name: Avinay Sharma / AvinayStudio',
     '• Bank Transfer: Details available upon direct confirmation.',
     '• Note: Please share screenshot or transaction reference after transfer.',
