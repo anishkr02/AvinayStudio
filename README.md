@@ -53,14 +53,27 @@ AvinayStudio is a bespoke, cinematic dark-themed agency portfolio platform engin
    npm install
    ```
 
-3. **Configure Environment Variables**:
-   Create `.env.local` and add your Supabase credentials:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
+## Database setup
 
-4. **Run Development Server**:
+1. Create a Supabase project. Copy the Project URL and anon key into `.env.local` using [.env.example](./.env.example) as a template.
+2. Run [`supabase/migrations/001_init.sql`](./supabase/migrations/001_init.sql) in the Supabase SQL Editor. On a fresh project, the “destructive operation” warning is expected because the migration uses `drop policy if exists`.
+3. Create the admin user in **Authentication > Users > Add user** and tick **Auto Confirm**.
+4. Promote the user to admin in the SQL Editor:
+   ```sql
+   update auth.users
+   set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}'::jsonb
+   where email = 'YOUR_EMAIL';
+   ```
+5. The role lives in `app_metadata`, which users cannot edit. Log out and back in after promotion so the new JWT contains the role.
+
+## Security notes
+
+- RLS is enabled on every table.
+- The public can only read featured projects and insert leads.
+- Never commit `.env` files. Rotate Supabase keys if they were ever committed.
+
+## Run the development server
+
    ```bash
    npm run dev
    ```
