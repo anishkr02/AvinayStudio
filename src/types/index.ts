@@ -65,3 +65,25 @@ export interface Invoice {
   notes?: string | null;
   created_at?: string | null;
 }
+
+export type LeadStatus = 'New' | 'Contacted' | 'Converted' | 'Dismissed';
+
+export interface Lead {
+  id: string;
+  name: string;
+  phone: string;
+  business: string | null;
+  package: string | null;
+  message: string | null;
+  status: LeadStatus;
+  converted_client_id: string | null;
+  created_at: string;
+}
+
+export interface LeadInput {
+  name: string;
+  phone: string;
+  business?: string;
+  package?: string;
+  message?: string;
+}
